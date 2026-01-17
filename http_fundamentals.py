@@ -11,8 +11,8 @@ def demonstrate_get(url):
     Return: response object
     """
     r = requests.get(url)
-    print(f"Status Code: {r.status_code}\n Headrs (Content-Type): {r.headers} \n Response body: {r.text}")
-    return r
+    print(f"Status Code: {r.status_code}\n Headrs (Content-Type): {r.headers["Content-Type"]} \n Response body: {r.text}")
+    return r.json()
 
 def demonstrate_post(url, data):
     """
