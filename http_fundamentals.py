@@ -61,14 +61,18 @@ def handle_response(response):
     
     Returns: tuple (success: bool, message: str, data: dict or None)
     """
-    if response.status_code >= 200 and response.status_code < 300:
-        return (True, 'successful request', response.text)
-    elif response.status_code >= 400 and response.status_code < 500:
-        return (False, "Client side error", None)
-    elif response.status_code >= 500 and response.status_code < 600:
-        return (False, "Server side error", None)
+    if 200 <= response.status_code < 300:
+        try:
+            data = response.json()
+        except ValueError:
+            data = response.text
+        return (True, f'Successful request ({response.status_code})', data)
+    elif 400 <= response.status_code < 500:
+        return (False, f"Client side error ({response.status_code})", None)
+    elif 500 <= response.status_code < 600:
+        return (False, f"Server side error ({response.status_code})", None)
     else:
-        return (False, "generic error", None)
+        return (False, f"Generic error ({response.status_code})", None)
 
 def check_resource_exists(url):
     """
@@ -82,6 +86,7 @@ def check_resource_exists(url):
         elif r.status_code == 404:
             return False
         else:
-            raise Exception(f"Unexpectd status code: {r.status_code}")
+            raise Exception(f"Unexpected status code: {r.status_code}")
     except Exception as err:
         print(err)
+        raise
