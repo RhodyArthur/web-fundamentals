@@ -47,3 +47,41 @@ def demonstrate_delete(url):
         return True
     else:
         return False
+
+# Task 1.2: Working with Status Codes (5 points)
+# Create a function that handles different status codes:
+
+def handle_response(response):
+    """
+    Takes a requests.Response object and handles different status codes:
+    - 200-299: Return success message and data
+    - 400-499: Return client error message
+    - 500-599: Return server error message
+    - Others: Return generic error message
+    
+    Returns: tuple (success: bool, message: str, data: dict or None)
+    """
+    if response.status_code >= 200 and response.status_code < 300:
+        return (True, 'successful request', response.text)
+    elif response.status_code >= 400 and response.status_code < 500:
+        return (False, "Client side error", None)
+    elif response.status_code >= 500 and response.status_code < 600:
+        return (False, "Server side error", None)
+    else:
+        return (False, "generic error", None)
+
+def check_resource_exists(url):
+    """
+    Check if a resource exists at the given URL
+    Return: True if status is 200, False for 404, raise exception for other errors
+    """
+    try:
+        r = requests.get(url)
+        if r.status_code == 200:
+            return True
+        elif r.status_code == 404:
+            return False
+        else:
+            raise Exception(f"Unexpectd status code: {r.status_code}")
+    except Exception as err:
+        print(err)
