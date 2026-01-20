@@ -11,7 +11,7 @@ def demonstrate_get(url):
     Return: response object
     """
     r = requests.get(url, params={"q":1})
-    print(f"Status Code: {r.status_code}\n Headrs (Content-Type): {r.headers["Content-Type"]} \n Response body: {r.text}")
+    print(f"Status Code: {r.status_code}\n Headers (Content-Type): {r.headers['Content-Type']} \n Response body: {r.text}")
     return r
 
 def demonstrate_post(url, data):
@@ -20,8 +20,9 @@ def demonstrate_post(url, data):
     Print: status code and response body
     Return: response object
     """
-    response = requests.post(url, data)
+    response = requests.post(url, json=data)
     print(f"Status code: {response.status_code}, Body: {response.text}")
+    return response
 
 def demonstrate_put(url, data):
     """
@@ -29,7 +30,10 @@ def demonstrate_put(url, data):
     Print: status code and response body
     Return: response object
     """
-    pass
+    response = requests.put(url, json=data)
+    print(f"Status code: {response.status_code}, Body: {response.text}")
+    return response
+
 
 def demonstrate_delete(url):
     """
@@ -37,4 +41,9 @@ def demonstrate_delete(url):
     Print: status code
     Return: True if successful (status 200-299), False otherwise
     """
-    pass
+    response = requests.delete(url)
+    if response.status_code > 199 and response.status_code < 300:
+        print(f"Status code: {response.status_code}")
+        return True
+    else:
+        return False
