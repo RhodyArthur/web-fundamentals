@@ -10,9 +10,9 @@ def demonstrate_get(url):
     Print: status code, headers (Content-Type), and response body
     Return: response object
     """
-    r = requests.get(url)
+    r = requests.get(url, params={"q":1})
     print(f"Status Code: {r.status_code}\n Headrs (Content-Type): {r.headers["Content-Type"]} \n Response body: {r.text}")
-    return r.json()
+    return r
 
 def demonstrate_post(url, data):
     """
@@ -20,7 +20,8 @@ def demonstrate_post(url, data):
     Print: status code and response body
     Return: response object
     """
-    pass
+    response = requests.post(url, data)
+    print(f"Status code: {response.status_code}, Body: {response.text}")
 
 def demonstrate_put(url, data):
     """
