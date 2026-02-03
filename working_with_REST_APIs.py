@@ -29,7 +29,15 @@ class JSONPlaceholderClient:
         Return: post dictionary or None if not found
         Handle 404 gracefully
         """
-        pass
+        url = JSONPlaceholderClient.BASE_URL/post_id
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except HTTPError as err:
+            print(err)
+            return None
+        else:
+            return response.json()
     
     def create_post(self, title, body, user_id):
         """
