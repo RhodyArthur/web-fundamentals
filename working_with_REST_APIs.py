@@ -75,7 +75,8 @@ class JSONPlaceholderClient:
         data = self.get_post(post_id)
 
         if data is None:
-            raise TypeError(f"Post with id {post_id} not found.")
+            print(f"Post with id {post_id} not found.")
+            return False
         
         if title is not None:
             data["title"] = title
@@ -98,7 +99,23 @@ class JSONPlaceholderClient:
         Delete a post
         Return: True if successful, False otherwise
         """
-        pass
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts/{post_id}'
+
+        data = self.get_post(post_id)
+
+        if data is None:
+            print(f"Post with id {post_id} not found.")
+            return False
+        
+        try:
+            response = requests.delete(url)
+            response.raise_for_status()
+            return True
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return False
     
     def get_user_posts(self, user_id):
         """
@@ -106,7 +123,16 @@ class JSONPlaceholderClient:
         Use query parameters: ?userId=<user_id>
         Return: list of post dictionaries
         """
-        pass
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts'
+        try:
+            response = requests.get(url, params={"userId":user_id})
+            response.raise_for_status()
+            return response.json()
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return []
     
     def search_posts(self, keyword):
         """
@@ -114,4 +140,9 @@ class JSONPlaceholderClient:
         Fetch all posts and filter locally
         Return: list of matching posts
         """
-        pass
+        all_posts = self.get_all_posts()
+        matches = []
+        for post in all_posts:
+            if keyword.lower() in post["title"].lower() or keyword.lower() in post["body"].lower():
+                matches.append(post)
+        return matches
