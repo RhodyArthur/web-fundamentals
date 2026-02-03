@@ -14,13 +14,16 @@ class JSONPlaceholderClient:
         Fetch all posts
         Return: list of post dictionaries
         """
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts'
         try:
-            response = requests.get(JSONPlaceholderClient.BASE_URL)
+            response = requests.get(url)
             response.raise_for_status()
-        except HTTPError as err:
-            print(err)
-        else:
             return response.json()
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return []
 
     
     def get_post(self, post_id):
@@ -29,30 +32,30 @@ class JSONPlaceholderClient:
         Return: post dictionary or None if not found
         Handle 404 gracefully
         """
-        url = JSONPlaceholderClient.BASE_URL/post_id
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts/{post_id}'
         try:
             response = requests.get(url)
             response.raise_for_status()
-        except HTTPError as err:
-            print(err)
-            return None
-        else:
             return response.json()
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return None
     
     def create_post(self, title, body, user_id):
         """
         Create a new post
         Return: created post dictionary with id
         """
-        all_data = self.get_post()
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts'
         data = {
             "userId": user_id,
-            "id": len(all_data) + 1,
             "title": title,
             "body": body
         }
         try:
-            response = requests.post(JSONPlaceholderClient.BASE_URL, data=data)
+            response = requests.post(url, json=data)
             response.raise_for_status()
         except HTTPError as err:
             print(err)
@@ -65,7 +68,20 @@ class JSONPlaceholderClient:
         Only update fields that are provided
         Return: updated post dictionary
         """
-        pass
+        url = JSONPlaceholderClient.BASE_URL/post_id
+        all_data = self.get_all_posts()
+        if all_data["id"] == post_id:
+            all_data["title"] = title
+            all_data["body"] = body
+
+        try:
+            response = requests.put(url, all_data["id"])
+            response.raise_for_status()
+        except HTTPError as err:
+            print(err)
+            return None
+        else:
+            return response.json()
     
     def delete_post(self, post_id):
         """
