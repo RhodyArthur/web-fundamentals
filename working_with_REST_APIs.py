@@ -57,10 +57,12 @@ class JSONPlaceholderClient:
         try:
             response = requests.post(url, json=data)
             response.raise_for_status()
-        except HTTPError as err:
-            print(err)
-        else:
             return response.json()
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return None
     
     def update_post(self, post_id, title=None, body=None):
         """
@@ -68,20 +70,20 @@ class JSONPlaceholderClient:
         Only update fields that are provided
         Return: updated post dictionary
         """
-        url = JSONPlaceholderClient.BASE_URL/post_id
-        all_data = self.get_all_posts()
-        if all_data["id"] == post_id:
-            all_data["title"] = title
-            all_data["body"] = body
+        url = f'{JSONPlaceholderClient.BASE_URL}/posts/{post_id}'
+        data = self.get_post(post_id)
+        data["title"] = title
+        data["body"] = body
 
         try:
-            response = requests.put(url, all_data["id"])
+            response = requests.put(url, json=data)
             response.raise_for_status()
-        except HTTPError as err:
-            print(err)
-            return None
-        else:
             return response.json()
+        except HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+        return None
     
     def delete_post(self, post_id):
         """
