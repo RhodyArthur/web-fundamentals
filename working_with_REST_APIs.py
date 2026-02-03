@@ -44,7 +44,20 @@ class JSONPlaceholderClient:
         Create a new post
         Return: created post dictionary with id
         """
-        pass
+        all_data = self.get_post()
+        data = {
+            "userId": user_id,
+            "id": len(all_data) + 1,
+            "title": title,
+            "body": body
+        }
+        try:
+            response = requests.post(JSONPlaceholderClient.BASE_URL, data=data)
+            response.raise_for_status()
+        except HTTPError as err:
+            print(err)
+        else:
+            return response.json()
     
     def update_post(self, post_id, title=None, body=None):
         """
