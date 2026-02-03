@@ -71,9 +71,17 @@ class JSONPlaceholderClient:
         Return: updated post dictionary
         """
         url = f'{JSONPlaceholderClient.BASE_URL}/posts/{post_id}'
+
         data = self.get_post(post_id)
-        data["title"] = title
-        data["body"] = body
+
+        if data is None:
+            raise TypeError(f"Post with id {post_id} not found.")
+        
+        if title is not None:
+            data["title"] = title
+
+        if body is not None:
+            data["body"] = body
 
         try:
             response = requests.put(url, json=data)
