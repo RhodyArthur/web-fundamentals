@@ -27,7 +27,15 @@ def fetch_filtered_data(base_url, filters):
     Build query string from filters
     Return: list of filtered items
     """
-    pass
+    try:
+        response = requests.get(base_url, params=filters)
+        response.raise_for_status()
+        return response.json()
+    except HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+    return []
 
 def fetch_sorted_data(base_url, sort_by, order='asc'):
     """
@@ -37,4 +45,12 @@ def fetch_sorted_data(base_url, sort_by, order='asc'):
     URL format: base_url?_sort=<field>&_order=<order>
     Return: sorted list of items
     """
-    pass
+    try:
+        response = requests.get(base_url, params={"_sort":sort_by, "_order":order})
+        response.raise_for_status()
+        return response.json()
+    except HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+    return []
