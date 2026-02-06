@@ -38,7 +38,7 @@ def validate_post_data(data):
     userId = data.get("userId")
     if not isinstance(userId, int) or userId <= 0:
         return (False, 'userId is required and must be a positive integer')
-    return(True, None)
+    return (True, None)
 
 def extract_fields(data, fields):
     """
