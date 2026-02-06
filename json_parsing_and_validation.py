@@ -47,4 +47,10 @@ def extract_fields(data, fields):
     Example: extract_fields([{...}, {...}], ['id', 'title'])
     Return: list of dictionaries with only specified fields
     """
-    pass
+    if isinstance(data, dict):
+        data = [data]
+    result = []
+    for item in data:
+        extracted = {field: item.get(field) for field in fields}
+        result.append(extracted)
+    return result
