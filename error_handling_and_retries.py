@@ -60,7 +60,7 @@ def fetch_with_timeout(url, timeout=5):
         print(e)
         return (False, "Invalid JSON response")
 
-
+from functools import wraps
 def safe_api_call(func):
     """
     Decorator that wraps API calls with error handling
@@ -72,4 +72,11 @@ def safe_api_call(func):
         def get_data():
             return requests.get(url).json()
     """
-    pass
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except (requests.exceptions.RequestException, ValueError, KeyError) as e:
+            print(f"API call failed: {e}")
+            return None
+    return wrapper
