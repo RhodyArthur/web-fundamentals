@@ -23,7 +23,22 @@ def validate_post_data(data):
     - userId (integer, positive)
     Return: (valid: bool, error_message or None)
     """
-    pass
+
+    if data is None:
+        return (False, 'Data is required')
+    
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        return (False, 'title is required and must be a non-empty string')
+    
+    body = data.get("body")
+    if not isinstance(body, str) or not body.strip():
+        return (False, 'body is required and must be a non-empty string')
+    
+    userId = data.get("userId")
+    if not isinstance(userId, int) or userId <= 0:
+        return (False, 'userId is required and must be a positive integer')
+    return(True, None)
 
 def extract_fields(data, fields):
     """
