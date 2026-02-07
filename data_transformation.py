@@ -11,10 +11,11 @@ def transform_post(post):
         'author_id': post['userId']
     }
     """
+    body = post.get('body')
     return {
         'id': post.get('id'),
         'title': post.get('title'),
-        'preview': (post.get('body', '')[:50] + '...') if post.get('body') else '',
+        'preview': body[:50] + ('...' if len(body) > 50 else ''),
         'author_id': post.get('userId')
     }
 
@@ -50,9 +51,9 @@ def calculate_statistics(posts) -> dict:
     title_lengths = []
     posts_per_user = {}
     for post in posts:
-        title = len(post.get('title',''))
+        title_length = len(post.get('title',''))
         userId = post.get('userId')
-        title_lengths.append(title)
+        title_lengths.append(title_length)
 
         if userId in posts_per_user:
             posts_per_user[userId] += 1
@@ -60,7 +61,10 @@ def calculate_statistics(posts) -> dict:
             posts_per_user[userId] = 1
     avg_title_length = sum(title_lengths) / total_posts if total_posts > 0 else 0
 
-    return {"Total posts": total_posts,
-            "Average title length": avg_title_length,
-            "Posts per user": posts_per_user}
+    return {
+  "total_posts": total_posts,
+  "avg_title_length": avg_title_length,
+  "posts_per_user": posts_per_user
+}
+
 
