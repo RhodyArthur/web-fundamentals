@@ -20,7 +20,10 @@ class GitHubClient:
         self.token = token
         self.session = requests.Session()
         # Set up headers including User-Agent (required by GitHub)
-        pass
+        self.headers = {'User-Agent': 'GitHubClient/1.0'}
+        if token:
+            self.headers['Authorization'] = f"token {token}"
+        self.session.headers.update(self.headers)
     
     def get_user(self, username):
         """
