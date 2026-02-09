@@ -93,16 +93,18 @@ class GitHubClient:
         Return: list of repository dictionaries
         """
         url = f"{self.BASE_URL}/search/repositories"
-        accepted_sort_options = ["stars", "forks", " updated"]
+        accepted_sort_options = ["stars", "forks", "updated"]
 
         try:
             if sort not in accepted_sort_options:
                 raise ValueError("valid sort options are 'stars', 'forks', and 'updated'")
+            if language:
+                query = f"{query} language: {language}"
             r = self.session.get(url, params={"q": query, "sort": sort, "per_page":max_results})
             if r.status_code == 404:
                 return None
             r.raise_for_status()
-            return r.json()
+            return r.json().get('items',[])
         except requests.RequestException as e:
             print(f"Error searching repository: {e}")
             return None
