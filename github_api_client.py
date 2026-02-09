@@ -115,17 +115,41 @@ class GitHubClient:
         Endpoint: GET /repos/{owner}/{repo}/languages
         Return: dictionary of {language: bytes_of_code}
         """
-        pass
+        url = f"{self.BASE_URL}/repos/{owner}/{repo_name}/languages"
+        try:
+            response = self.session.get(url)
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching languages in a repo: {e}")
+            return None
     
-    def get_rate_limit(self):
+    def get_rate_limit(self) -> dict | None:
         """
         Check API rate limit status
         Endpoint: GET /rate_limit
         Return: dictionary with limit, remaining, and reset time
         """
-        pass
+        url = f"{self.BASE_URL}/rate_limit"
+        try:
+            response = self.session.get(url)
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            data = response.json()
+            core = data.get("resources", {}).get("core", {})
+            return {
+                "limit": core.get("limit"),
+                "remaining": core.get("remaining"),
+                "reset": core.get("reset")
+            }
+        except requests.RequestException as e:
+            print(f"Error fetching rate information: {e}")
+            return None
     
-    def get_trending_repos(self, language=None, since='daily'):
+    def get_trending_repos(self, language=None, since='daily') -> list | None:
         """
         Get trending repositories
         Note: GitHub doesn't have official trending API
@@ -133,4 +157,22 @@ class GitHubClient:
         since options: 'daily', 'weekly', 'monthly'
         Return: list of trending repositories
         """
-        pass
+        url = f"{self.BASE_URL}/search/repositories"
+        options = ['daily', 'weekly', 'monthly']
+        try:
+            if since not in options:
+                raise ValueError("Valid since parameters are: daily, weekly, monthly")
+            from datetime import datetime, timedelta
+            days = {'daily': 1, 'weekly': 7, 'monthly': 30}[since]
+            date_str = (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d')
+            q = f"created:>{date_str}"
+            if language:
+                q += f" language:{language}"
+            response = self.session.get(url, params={"q": q, "sort": "stars", "order": "desc"})
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json().get("items", [])
+        except requests.RequestException as e:
+            print(f"Error fetching trending repositories: {e}")
+            return None
