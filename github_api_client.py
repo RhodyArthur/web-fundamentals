@@ -50,7 +50,20 @@ class GitHubClient:
         sort options: 'created', 'updated', 'pushed', 'full_name'
         Return: list of repository dictionaries
         """
-        pass
+        url = f"{self.BASE_URL}/users/{username}/repos"
+        sort_options = ['created', 'updated', 'pushed', 'full_name']
+
+        try:
+            if sort not in sort_options:
+                raise ValueError("Unexpected sort value")
+            response = self.session.get(url, params={"sort": sort})
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching user repos: {e}")
+            return None
     
     def get_repo(self, owner, repo_name):
         """
