@@ -32,7 +32,16 @@ class GitHubClient:
         Return: user dictionary or None if not found
         Handle 404 gracefully
         """
-        pass
+        url = f"{self.BASE_URL}/users/{username}"
+        try:
+            response = self.session.get(url)
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching user: {e}")
+            return None
     
     def get_user_repos(self, username, sort='updated'):
         """
