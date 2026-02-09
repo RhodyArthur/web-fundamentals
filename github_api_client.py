@@ -71,7 +71,16 @@ class GitHubClient:
         Endpoint: GET /repos/{owner}/{repo}
         Return: repository dictionary or None if not found
         """
-        pass
+        url = f"{self.BASE_URL}/repos/{owner}/{repo_name}"
+        try:
+            response = self.session.get(url)
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching repository information: {e}")
+            return None
     
     def search_repositories(self, query, language=None, sort='stars', max_results=10):
         """
