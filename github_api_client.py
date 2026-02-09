@@ -148,6 +148,8 @@ class GitHubClient:
         except requests.RequestException as e:
             print(f"Error fetching rate information: {e}")
             return None
+            print(f"Error fetching rate information: {e}")
+            return None
     
     def get_trending_repos(self, language=None, since='daily') -> list | None:
         """
