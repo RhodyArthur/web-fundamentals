@@ -22,7 +22,7 @@ class GitHubClient:
         # Set up headers including User-Agent (required by GitHub)
         self.headers = {'User-Agent': 'GitHubClient/1.0'}
         if token:
-            self.headers['Authorization'] = f"token {token}"
+            self.headers['Authorization'] = f"Bearer {token}"
         self.session.headers.update(self.headers)
     
     def get_user(self, username):
@@ -61,7 +61,7 @@ class GitHubClient:
                 return None
             response.raise_for_status()
             return response.json()
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
             print(f"Error fetching user repos: {e}")
             return None
     
@@ -99,13 +99,13 @@ class GitHubClient:
             if sort not in accepted_sort_options:
                 raise ValueError("valid sort options are 'stars', 'forks', and 'updated'")
             if language:
-                query = f"{query} language: {language}"
+                query = f"{query} language:{language}"
             r = self.session.get(url, params={"q": query, "sort": sort, "per_page":max_results})
             if r.status_code == 404:
                 return None
             r.raise_for_status()
             return r.json().get('items',[])
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
             print(f"Error searching repository: {e}")
             return None
     
@@ -173,6 +173,6 @@ class GitHubClient:
                 return None
             response.raise_for_status()
             return response.json().get("items", [])
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
             print(f"Error fetching trending repositories: {e}")
             return None
