@@ -1,0 +1,214 @@
+API Best Practices - Task 5.2
+
+1. URL NAMING CONVENTIONS
+
+Should URLs use plural or singular nouns? Why?
+URLs should use plural nouns for resource collections. This creates consistency and clarity in the API design. For example, use `/api/v1/users` instead of `/api/v1/user`. This makes it clear that the endpoint returns multiple resources, and it's consistent whether you're accessing the collection or a single item (e.g., `/api/v1/users/1`). Using plural nouns also aligns with database table naming conventions and makes the API more intuitive.
+
+Should URLs have trailing slashes?
+No, URLs should NOT have trailing slashes. Be consistent with this convention across all endpoints. Trailing slashes can cause confusion and may lead to duplicate URLs (e.g., `/api/v1/users` vs `/api/v1/users/`), which could be treated as different resources by some servers. Most modern REST APIs omit trailing slashes for cleaner and more predictable URLs.
+
+Good vs Bad URL Design Examples:
+
+GOOD:
+- /api/v1/users                    (plural noun, no trailing slash)
+- /api/v1/users/123                (specific resource with ID)
+- /api/v1/posts/5/comments         (nested resource showing relationship)
+- /api/v1/users?role=admin         (query parameters for filtering)
+- /api/v1/categories/tech/posts    (hierarchical relationship)
+
+BAD:
+- /api/v1/getUsers                 (uses verbs - HTTP methods specify action)
+- /api/v1/user/                    (singular noun + trailing slash)
+- /api/v1/users/delete/123         (action in URL - use DELETE method instead)
+- /api/v1/user-posts               (inconsistent naming with hyphens)
+- /api/v1/usersData                (unnecessary suffix)
+- /api/v1/posts?action=create      (action in query param - use POST method)
+
+---
+
+2. API VERSIONING
+
+What are three ways to version an API?
+
+a) URL Path Versioning
+   Include the version number directly in the URL path.
+   Example: https://api.example.com/v1/users
+            https://api.example.com/v2/users
+
+b) Header Versioning
+   Specify the API version in a custom request header.
+   Example: GET https://api.example.com/users
+            Header: API-Version: 1
+            OR
+            Header: Accept: application/vnd.example.v1+json
+
+c) Query Parameter Versioning
+   Include the version as a query parameter in the URL.
+   Example: https://api.example.com/users?version=1
+            https://api.example.com/users?api-version=2
+
+Which method do you think is best? Why?
+
+URL Path Versioning (Option a) is the best approach because:
+- It's the most explicit and visible - developers can immediately see which version they're using
+- It's easiest to implement and understand
+- It works well with browser-based testing and documentation tools
+- It simplifies routing and caching at the infrastructure level
+- Different versions can be deployed and maintained separately
+- It's the most widely adopted standard in industry (used by Twitter, Stripe, GitHub, etc.)
+- URLs are self-documenting and can be bookmarked or shared easily
+
+Header versioning is more "RESTful" in theory but harder to test and debug. Query parameter versioning is less common and can conflict with other query parameters used for filtering.
+
+Examples of Each Versioning Method:
+
+URL Path Versioning:
+- https://api.github.com/v3/users
+- https://api.stripe.com/v1/customers
+- https://api.twitter.com/2/tweets
+
+Header Versioning:
+Request:
+  GET https://api.example.com/users
+  Accept: application/vnd.example.v2+json
+  
+OR
+  GET https://api.example.com/users
+  API-Version: 2
+
+Query Parameter Versioning:
+- https://api.example.com/users?version=1
+- https://api.example.com/users?api_version=2
+- https://graph.microsoft.com/users?api-version=1.0
+
+---
+
+3. PAGINATION
+
+Why is pagination important?
+
+Pagination is critical for several reasons:
+- Performance: Prevents loading excessive data that could slow down the server and client
+- Resource Management: Reduces memory consumption and database load
+- User Experience: Enables faster initial page loads and smoother navigation
+- Network Efficiency: Reduces bandwidth usage by transferring smaller data chunks
+- Scalability: Allows the API to handle large datasets without degradation
+- Timeout Prevention: Prevents request timeouts when dealing with large collections
+
+What are two common pagination approaches?
+
+a) Offset-Based Pagination (Page Number & Limit)
+   Uses page numbers or offset values with a limit/size parameter to specify which "slice" of data to retrieve.
+
+b) Cursor-Based Pagination (Keyset Pagination)
+   Uses a unique identifier (cursor) from the last item of the current page to fetch the next set of results.
+
+Example Query Parameters for Each:
+
+Offset-Based Pagination:
+Request:
+  GET /api/v1/posts?page=2&limit=10
+  OR
+  GET /api/v1/posts?offset=20&limit=10
+
+Response:
+{
+  "data": [
+    { "id": 21, "title": "Post 21" },
+    { "id": 22, "title": "Post 22" },
+    ...
+  ],
+  "pagination": {
+    "page": 2,
+    "limit": 10,
+    "total": 150,
+    "pages": 15,
+    "has_next": true,
+    "has_prev": true
+  }
+}
+
+Cursor-Based Pagination:
+Request:
+  GET /api/v1/posts?cursor=eyJpZCI6MjB9&limit=10
+  (First request: GET /api/v1/posts?limit=10)
+
+Response:
+{
+  "data": [
+    { "id": 21, "title": "Post 21" },
+    { "id": 22, "title": "Post 22" },
+    ...
+  ],
+  "pagination": {
+    "limit": 10,
+    "next_cursor": "eyJpZCI6MzB9",
+    "prev_cursor": "eyJpZCI6MTB9",
+    "has_next": true,
+    "has_prev": true
+  }
+}
+
+Offset-based is simpler and allows jumping to specific pages, but can have performance issues with large datasets and may return inconsistent results if data changes during navigation. Cursor-based is more performant for large datasets and provides consistent results, but doesn't allow jumping to arbitrary pages.
+
+---
+
+4. AUTHENTICATION
+
+What's the difference between API Key and Bearer Token authentication?
+
+API Key:
+- A permanent or long-lived secret string that identifies the application or user
+- Typically static and doesn't expire (unless manually regenerated)
+- Simple to implement but less secure
+- Usually identifies the application rather than the specific user
+- No built-in expiration or refresh mechanism
+- Used for server-to-server communication or simple auth scenarios
+
+Bearer Token:
+- A temporary token (usually JWT - JSON Web Token) that expires after a set time
+- Contains encoded user information and permissions (claims)
+- More secure - tokens can be revoked and expire automatically
+- Typically part of OAuth 2.0 flow with access tokens and refresh tokens
+- Allows fine-grained access control and user-specific permissions
+- Better for user authentication in web and mobile applications
+
+Where should authentication credentials be placed (header/query/body)? Why?
+
+Authentication credentials should be placed in the REQUEST HEADER, specifically:
+- API Keys: In a custom header like `X-API-Key` or `API-Key`
+- Bearer Tokens: In the standard `Authorization` header with format: `Authorization: Bearer <token>`
+
+Examples:
+  API Key Header:
+    GET /api/v1/users
+    X-API-Key: abc123xyz789secretkey
+    
+  Bearer Token Header:
+    GET /api/v1/users
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Why headers?
+
+1. Security:
+   - Headers are not logged in server access logs (unlike URLs)
+   - Not visible in browser history or bookmarks
+   - Not cached by browsers or proxy servers
+   - Encrypted by HTTPS along with the body
+
+2. URL Query Parameters are INSECURE because:
+   - Logged in server logs, browser history, and analytics
+   - Visible in browser address bar
+   - Can be leaked through Referer headers
+   - May be cached by proxies or CDNs
+
+3. Request Body is not appropriate because:
+   - GET requests typically don't have bodies
+   - Inconsistent across different HTTP methods
+   - Not the standard practice for authentication
+
+4. Standardization:
+   - HTTP standard defines Authorization header for this purpose
+   - Industry best practice followed by all major APIs
+   - Compatible with authentication frameworks and libraries
